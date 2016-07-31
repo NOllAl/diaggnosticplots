@@ -1,0 +1,20 @@
+Package: diaggnosticplots
+Type: Package
+Title: Make Diagnostic Plots for predictive Models
+Version: 0.1.0
+Authors@R: person("AlexandeR", "Noll", email = "alexander.noll@hotmail.com",
+                  role = c("aut", "cre"))
+Maintainer: AlexandeR Noll <alexander.noll@hotmail.com>
+Description: This package transforms some useful diagnostic plots for
+    predictive models to the ggplot2 plotting system. These include include the
+    lift plot, the gain plot and calibration plots. The computation involved
+    come from the wonderful caret package.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Depends:
+    ggplot2
+Imports:
+    caret,
+    ggplot2
+RoxygenNote: 5.0.1
