@@ -1,18 +1,32 @@
+# library(mlbench)
+# data("BreastCancer")
+# my_data <- BreastCancer %>%
+#   mutate(Cell.size = as.numeric(Cell.size)) %>%
+#   select(Cell.size, Class)
+#
+# fit <- glm(Class ~ ., data = my_data, family = "binomial")
+# my_data$pred <- predict(fit, newdata = my_data)
+
+
+
+
 StatGain <- ggproto("StatGain", Stat,
 
   setup_data = function(data, params) {
-    data$y <- as.factor(data$y)
+    data$class <- as.factor(data$class)
     data$group <- 1
     data
   },
 
 
-  compute_group = function(data, scales, formula = y ~ x) {
+  compute_group = function(data, scales, formula = class ~ score) {
     lift_curve <- caret::lift(formula, data = data)$data
-    data.frame(x = lift_curve$CumTestedPct, y = lift_curve$CumEventPct)
+    data.frame(cum_tested_pct = lift_curve$CumTestedPct,
+               cum_event_pct = lift_curve$CumEventPct)
   },
 
-  required_aes = c("x", "y")
+  required_aes = c("score", "class"),
+  default_aes = aes(x = ..cum_tested_pct.., y = ..cum_event_pct..)
 )
 
 stat_gain <- function(mapping = NULL, data = NULL, geom = "GeomGain",
@@ -26,10 +40,10 @@ stat_gain <- function(mapping = NULL, data = NULL, geom = "GeomGain",
 }
 
 
-GeomGain <- ggplot2::ggproto("GeomGain", Geom,
+GeomGain <- ggproto("GeomGain", Geom,
                     required_aes = c("x", "y"),
-                    default_aes = aes(shape = 19, colour = "black", hjust = 10, angle = 90),
                     draw_key = draw_key_point,
+                    default_aes = aes(shape = 20, colour = "black"),
 
                     draw_panel = function(data, panel_scales, coord) {
                       coords <- coord$transform(data, panel_scales)
@@ -70,4 +84,4 @@ geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
 }
 
 
-# my_data %>% ggplot(aes(x = x, y = y)) + geom_gain()
+#my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain()
