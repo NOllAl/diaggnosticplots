@@ -19,8 +19,9 @@ StatGain <- ggproto("StatGain", Stat,
   },
 
 
-  compute_group = function(data, scales, formula = class ~ score) {
-    lift_curve <- caret::lift(formula, data = data)$data
+  compute_group = function(data, scales, formula = class ~ score,
+                           positive_class = NULL) {
+    lift_curve <- caret::lift(formula, data = data, class = positive_class)$data
     data.frame(cum_tested_pct = lift_curve$CumTestedPct,
                cum_event_pct = lift_curve$CumEventPct)
   },
@@ -31,11 +32,11 @@ StatGain <- ggproto("StatGain", Stat,
 
 stat_gain <- function(mapping = NULL, data = NULL, geom = "GeomGain",
                       position = "identity", na.rm = FALSE, show.legend = NA,
-                      inherit.aes = TRUE, ...) {
+                      positive_class, inherit.aes = TRUE, ...) {
   layer(stat = StatGain, data = data, mapping = mapping, geom = geom,
         position = position, show.legend = show.legend,
         inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm)
+        params = list(na.rm = na.rm, positive_class = positive_class)
     )
 }
 
@@ -84,4 +85,4 @@ geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
 }
 
 
-#my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain()
+# my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain(positive_class = "malignant")
