@@ -21,9 +21,11 @@ StatGain <- ggproto("StatGain", Stat,
 
   compute_group = function(data, scales, formula = class ~ score,
                            positive_class = NULL) {
-    lift_curve <- caret::lift(formula, data = data, class = positive_class)$data
-    data.frame(cum_tested_pct = lift_curve$CumTestedPct,
-               cum_event_pct = lift_curve$CumEventPct)
+    lift_curve <- caret::lift(formula, data = data, class = positive_class)
+
+    data.frame(cum_tested_pct = lift_curve$data$CumTestedPct,
+               cum_event_pct = lift_curve$data$CumEventPct,
+               pct = lift_curve$pct)
   },
 
   required_aes = c("score", "class"),
@@ -44,13 +46,16 @@ stat_gain <- function(mapping = NULL, data = NULL, geom = "GeomGain",
 GeomGain <- ggproto("GeomGain", Geom,
                     required_aes = c("x", "y"),
                     draw_key = draw_key_point,
-                    default_aes = aes(shape = 20, colour = "black"),
+                    default_aes = aes(colour = "black"),
 
                     draw_panel = function(data, panel_scales, coord) {
+                      # Reorder points
+                      data <- data[order(data[["x"]]), ]
+
                       coords <- coord$transform(data, panel_scales)
-                      grid::pointsGrob(
+                      grid::linesGrob(
                         coords$x, coords$y,
-                        pch = coords$shape,
+                       # pch = coords$shape,
 
                         gp = grid::gpar(col = coords$colour)
                       )
@@ -85,4 +90,4 @@ geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
 }
 
 
-# my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain(positive_class = "malignant")
+#my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain(positive_class = "malignant")
