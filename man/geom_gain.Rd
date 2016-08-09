@@ -2,21 +2,32 @@
 % Please edit documentation in R/geom_gain.R
 \name{geom_gain}
 \alias{geom_gain}
-\title{Geom for lift gain curve}
+\title{Geom for gain curve}
 \usage{
 geom_gain(mapping = NULL, data = NULL, stat = "gain",
   position = "identity", na.rm = FALSE, show.legend = NA,
   inherit.aes = TRUE, ...)
 }
 \arguments{
-\item{formula}{}
+\item{mapping}{Set of aestetic mappings.}
+
+\item{positive_class}{character indicating the "positive" class.}
 }
 \description{
-Geom for lift gain curve
+Geom for gain curve
 }
 \examples{
-fit <- glm(Class ~ Cell.size + Cell.shape, data = BreastCancer, family = "binomial")
-fitted <- predict(fit, BreastCancer)
-my_data <- data.frame(x = - fitted, y = BreastCancer$Class)
+library(dplyr)
+library(mlbench)
+data("BreastCancer")
+my_data <- BreastCancer \%>\%
+  mutate(Cell.size = as.numeric(Cell.size)) \%>\%
+    select(Cell.size, Class)
+
+fit <- glm(Class ~ ., data = my_data, family = "binomial")
+my_data$pred <- predict(fit, newdata = my_data)
+my_data \%>\%
+  ggplot(aes(score = pred, class = Class)) +
+  geom_gain(positive_class = "malignant")
 }
 

@@ -32,7 +32,7 @@ StatGain <- ggproto("StatGain", Stat,
   default_aes = aes(x = ..cum_tested_pct.., y = ..cum_event_pct..)
 )
 
-stat_gain <- function(mapping = NULL, data = NULL, geom = "GeomGain",
+stat_gain <- function(mapping = NULL, data = NULL, geom = "Gain",
                       position = "identity", na.rm = FALSE, show.legend = NA,
                       positive_class, inherit.aes = TRUE, ...) {
   layer(stat = StatGain, data = data, mapping = mapping, geom = geom,
@@ -53,31 +53,39 @@ GeomGain <- ggproto("GeomGain", Geom,
                       data <- data[order(data[["x"]]), ]
 
                       coords <- coord$transform(data, panel_scales)
-                      grid::linesGrob(
+                      main <- grid::linesGrob(
                         coords$x, coords$y,
-                       # pch = coords$shape,
-
                         gp = grid::gpar(col = coords$colour)
                       )
                     }
 )
 
-#' Geom for lift gain curve
+#' Geom for gain curve
 #'
 #' @import ggplot2
 #'
 #' @param data
 #' @param scales
-#' @param formula
+#' @param mapping Set of aestetic mappings.
+#' @param positive_class character indicating the "positive" class.
 #'
 #' @return
 #' @export
 #'
 #'
 #' @examples
-#' fit <- glm(Class ~ Cell.size + Cell.shape, data = BreastCancer, family = "binomial")
-#' fitted <- predict(fit, BreastCancer)
-#' my_data <- data.frame(x = - fitted, y = BreastCancer$Class)
+#' library(dplyr)
+#' library(mlbench)
+#' data("BreastCancer")
+#' my_data <- BreastCancer %>%
+#'   mutate(Cell.size = as.numeric(Cell.size)) %>%
+#'     select(Cell.size, Class)
+#'
+#' fit <- glm(Class ~ ., data = my_data, family = "binomial")
+#' my_data$pred <- predict(fit, newdata = my_data)
+#' my_data %>%
+#'   ggplot(aes(score = pred, class = Class)) +
+#'   geom_gain(positive_class = "malignant")
 
 geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
                       position = "identity", na.rm = FALSE, show.legend = NA,
@@ -89,5 +97,6 @@ geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
   )
 }
 
-
-#my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain(positive_class = "malignant")
+#
+# my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain(positive_class = "malignant")
+# my_data %>% ggplot(aes(score = pred, class = Class)) + stat_gain(positive_class = "malignant")
