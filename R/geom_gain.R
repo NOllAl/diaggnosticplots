@@ -46,17 +46,38 @@ stat_gain <- function(mapping = NULL, data = NULL, geom = "Gain",
 GeomGain <- ggproto("GeomGain", Geom,
                     required_aes = c("x", "y"),
                     draw_key = draw_key_point,
-                    default_aes = aes(colour = "black"),
+                    default_aes = aes(colour = "black",
+                                      fill_color = "pink",
+                                      fill_alpha = .3,
+                                      width = 1),
 
                     draw_panel = function(data, panel_scales, coord) {
                       # Reorder points
                       data <- data[order(data[["x"]]), ]
 
                       coords <- coord$transform(data, panel_scales)
-                      main <- grid::linesGrob(
-                        coords$x, coords$y,
-                        gp = grid::gpar(col = coords$colour)
-                      )
+
+                      n <- nrow(coords)
+                      lm_x <- lm(x ~ cum_tested_pct, data = coords) %>%
+                        predict(data.frame(cum_tested_pct = data$pct)) %>%
+                        unique()
+                      lm_y <- lm(y ~ cum_event_pct, data = coords) %>%
+                        predict(data.frame(cum_event_pct = 100)) %>%
+                        unique()
+
+                      grid::gList(
+                        grid::polygonGrob(
+                          c(coords$x[c(1, n)], lm_x, coords$x[1]),
+                          c(coords$y[c(1, n)], lm_y, coords$y[1]),
+                          gp = grid::gpar(alpha = coords$fill_alpha,
+                                          fill = coords$fill_color)
+                        ),
+                        grid::linesGrob(
+                          coords$x, coords$y,
+                          gp = grid::gpar(col = coords$colour,
+                                          lwd = coords$width))
+
+                        )
                     }
 )
 
@@ -97,6 +118,6 @@ geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
   )
 }
 
-#
-# my_data %>% ggplot(aes(score = pred, class = Class)) + geom_gain(positive_class = "malignant")
-# my_data %>% ggplot(aes(score = pred, class = Class)) + stat_gain(positive_class = "malignant")
+
+# my_data %>% ggplot(aes(score = pred, class = Class)) +
+#   geom_gain(positive_class = "malignant", fill_color = "blue", fill_alpha = 0.1, width = 1)
