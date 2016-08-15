@@ -1,14 +1,6 @@
-# library(mlbench)
-# data("BreastCancer")
-# my_data <- BreastCancer %>%
-#   mutate(Cell.size = as.numeric(Cell.size)) %>%
-#   select(Cell.size, Class)
-#
-# fit <- glm(Class ~ ., data = my_data, family = "binomial")
-# my_data$pred <- predict(fit, newdata = my_data)
-
-
-
+#' ggproto class for stat_gain()
+#'
+#' @export
 
 StatGain <- ggproto("StatGain", Stat,
 
@@ -32,16 +24,50 @@ StatGain <- ggproto("StatGain", Stat,
   default_aes = aes(x = ..cum_tested_pct.., y = ..cum_event_pct..)
 )
 
+#' Geom for gain curve
+#'
+#' @description Plots the gain curve for evaluating a trained classification
+#' model.
+#'
+#' @import ggplot2
+#'
+#' @param data The data to be displayer in this layer.
+#' @param mapping Set of aestetic mappings. Required aesthetics are `score` and
+#'        `class`. Further aestetics that can be set are the `fill_color` and
+#'        the `fill_alpha`.
+#' @param positive_class character indicating the "positive" class of interest.
+#'
+#' @return ggplot
+#' @export
+#'
+#'
+#' @examples
+#' library(dplyr)
+#' library(mlbench)
+#' data("BreastCancer")
+#' my_data <- BreastCancer %>%
+#'   mutate(Cell.size = as.numeric(Cell.size)) %>%
+#'     select(Cell.size, Class)
+#'
+#' fit <- glm(Class ~ ., data = my_data, family = "binomial")
+#' my_data$pred <- predict(fit, newdata = my_data)
+#' my_data %>%
+#'   ggplot(aes(score = pred, class = Class)) +
+#'   geom_gain(positive_class = "malignant")
+
 stat_gain <- function(mapping = NULL, data = NULL, geom = "Gain",
                       position = "identity", na.rm = FALSE, show.legend = NA,
                       positive_class, inherit.aes = TRUE, ...) {
-  layer(stat = StatGain, data = data, mapping = mapping, geom = geom,
+  layer(stat = Gain, data = data, mapping = mapping, geom = geom,
         position = position, show.legend = show.legend,
         inherit.aes = inherit.aes,
         params = list(na.rm = na.rm, positive_class = positive_class)
     )
 }
 
+#' ggproto class for geom_gain()
+#'
+#' @export
 
 GeomGain <- ggproto("GeomGain", Geom,
                     required_aes = c("x", "y"),
@@ -83,14 +109,18 @@ GeomGain <- ggproto("GeomGain", Geom,
 
 #' Geom for gain curve
 #'
+#' @description Plots the gain curve for evaluating a trained classification
+#' model.
+#'
 #' @import ggplot2
 #'
-#' @param data
-#' @param scales
-#' @param mapping Set of aestetic mappings.
-#' @param positive_class character indicating the "positive" class.
+#' @param data The data to be displayer in this layer.
+#' @param mapping Set of aestetic mappings. Required aesthetics are `score` and
+#'        `class`. Further aestetics that can be set are the `fill_color` and
+#'        the `fill_alpha`.
+#' @param positive_class character indicating the "positive" class of interest.
 #'
-#' @return
+#' @return ggplot
 #' @export
 #'
 #'
@@ -117,7 +147,3 @@ geom_gain <- function(mapping = NULL, data = NULL, stat = "gain",
     params = list(na.rm = na.rm, ...)
   )
 }
-
-
-# my_data %>% ggplot(aes(score = pred, class = Class)) +
-#   geom_gain(positive_class = "malignant", fill_color = "blue", fill_alpha = 0.1, width = 1)
